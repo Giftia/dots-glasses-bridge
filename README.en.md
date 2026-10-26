@@ -1,5 +1,7 @@
 # Dots Glasses Bridge
 
+The first npm test downloads one hash-pinned public Hysteria release as a read-only verification fixture. It is not executed, contains no proxy credentials, and is cached in the ignored .test-assets directory. Prepare that cache before offline tests. Normal service startup does not download it.
+
 [简体中文](README.md)
 
 Connect Qwen N1 Pro glasses to your existing Dot. Speak, share a real photo, and continue a conversation with the same assistant. The bridge accepts requests quickly, delivers native MCP Events to the original Dot, and stores its replies. The glasses speak a short summary; a phone can open a signed page for full text and attachments.

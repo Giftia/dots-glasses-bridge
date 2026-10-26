@@ -6,6 +6,7 @@
     "node": ">=16.14.2"
   },
   "scripts": {
+    "pretest": "node scripts/prepare-test-assets.mjs",
     "start": "node server.mjs",
     "test": "node --test test/*.test.mjs",
     "check": "node scripts/check.mjs",

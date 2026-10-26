@@ -4,6 +4,7 @@ import http from 'node:http';
 import { mkdirSync, mkdtempSync, realpathSync, rmSync } from 'node:fs';
 import { resolve, join, sep } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { tmpdir } from 'node:os';
 import { createHash, randomBytes } from 'node:crypto';
 import { EventEmitter } from 'node:events';
 import { PassThrough } from 'node:stream';
@@ -16,7 +17,7 @@ const RESOURCE = BASE + '/mcp';
 const EVENT = 'glasses.message.created';
 const OWNER_CODE = 'http-fixture-owner-code-2026_ABCDEF';
 const VERIFIER = 'http-fixture-pkce-verifier-'.repeat(3);
-const TEST_ROOT = resolve(fileURLToPath(new URL('../../../work/dot-events-http-tests/', import.meta.url)));
+const TEST_ROOT = resolve(tmpdir(), 'dots-public-http-tests');
 const copy = value => JSON.parse(JSON.stringify(value));
 
 test('dedicated WeChat feed is disabled by default and cannot grant MCP access',async t=>{

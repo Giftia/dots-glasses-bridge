@@ -5,9 +5,10 @@ import { readFileSync } from 'node:fs';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { MANAGED_PROXY_BINARY_SHA256, startManagedWebhookProxy } from '../lib/managed-webhook-proxy.mjs';
+import { TEST_ASSET_PATH } from '../scripts/prepare-test-assets.mjs';
 
 // Public vendor binary only. No real proxy URL, auth, SNI or private file is read.
-const vendorBinary = readFileSync(fileURLToPath(new URL('../../../work/vendor/hysteria-v2.13.0/hysteria-linux-amd64', import.meta.url)));
+const vendorBinary = readFileSync(TEST_ASSET_PATH);
 const ROOT = resolve('test/managed-proxy-fixture');
 const UID = 1234;
 const USER = 'synthetic_user_1234', PASSWORD = 'synthetic_password_0123456789';

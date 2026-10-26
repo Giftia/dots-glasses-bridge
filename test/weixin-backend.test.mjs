@@ -6,12 +6,13 @@ import { Readable } from 'node:stream';
 import { mkdirSync, mkdtempSync, rmSync, readFileSync, readdirSync } from 'node:fs';
 import { join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { tmpdir } from 'node:os';
 import { createHash, randomBytes } from 'node:crypto';
 import { createApp } from '../server.mjs';
 import { MediaStore } from '../lib/media.mjs';
 import { hashOwnerCode, CHATGPT_CLIENT_ID, CHATGPT_REDIRECT_URI } from '../lib/oauth.mjs';
 
-const ROOT = fileURLToPath(new URL('../../../work/weixin-backend-tests/', import.meta.url));
+const ROOT = resolve(tmpdir(), 'dots-public-weixin-backend-tests');
 const BASE = 'https://dots.example.com/dots';
 const OWNER = 'synthetic-weixin-owner-code_0123456789';
 const VERIFIER = 'synthetic-weixin-pkce_'.repeat(3);

@@ -3,9 +3,10 @@ import assert from 'node:assert/strict';
 import { mkdirSync, mkdtempSync, readFileSync, realpathSync, rmSync } from 'node:fs';
 import { resolve, join, sep } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { tmpdir } from 'node:os';
 import { EventStore, CONVERSATION_LIMITS } from '../lib/store.mjs';
 
-const ROOT = resolve(fileURLToPath(new URL('../../../work/glasses-conversation-tests/', import.meta.url)));
+const ROOT = resolve(tmpdir(), 'dots-public-conversation-tests');
 function fixture(t) {
   mkdirSync(ROOT, { recursive: true });
   const dir = mkdtempSync(join(ROOT, 'store-'));

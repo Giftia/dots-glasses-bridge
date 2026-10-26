@@ -17,7 +17,7 @@ export function audit(root){
  const allowed=fs.existsSync(allowFile)?JSON.parse(fs.readFileSync(allowFile,'utf8')):[];
  let reviewedFixtures=0;
  function visit(directory){for(const entry of fs.readdirSync(directory,{withFileTypes:true})){
-  if(['.git','node_modules'].includes(entry.name))continue;
+  if(['.git','node_modules','.test-assets'].includes(entry.name))continue;
   const file=path.join(directory,entry.name),relative=path.relative(root,file).split(path.sep).join('/');
   if(entry.isSymbolicLink()){findings.push({file:relative,rule:'unreviewed-symlink'});continue;}
   if(entry.isDirectory()){

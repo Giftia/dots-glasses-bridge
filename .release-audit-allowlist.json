@@ -8,7 +8,7 @@
   {
     "file": "test/media.test.mjs",
     "rule": "credential-url",
-    "sha256": "2e5d51480b82bc3d951b505a449dfac0af9b0fc3480829deb7b5744ed1f20ded",
+    "sha256": "59b507355165ed3e7aeb5795ccfccf241bd68c8bfde5e224361d9e36c078958f",
     "reason": "Reviewed synthetic URL rejection/authentication fixtures; exact entire file hash only"
   },
   {

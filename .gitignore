@@ -1,4 +1,5 @@
 node_modules/
+.test-assets/
 .dot-events/
 .env
 .env.*
@@ -6,6 +7,7 @@ node_modules/
 private/
 *-private/
 runtime/
+work/
 coverage/
 test/.proxy-webhook-temp/
 test/.linux-deploy-temp/
