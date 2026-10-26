@@ -1,4 +1,4 @@
-import { lstatSync, mkdirSync, writeFileSync, chmodSync, readFileSync, readdirSync, unlinkSync, existsSync } from 'node:fs';
+import { lstatSync, mkdirSync, writeFileSync, chmodSync, readFileSync, readdirSync } from 'node:fs';
 import { dirname, isAbsolute, join, parse, resolve } from 'node:path';
 import { pathToFileURL } from 'node:url';
 import { randomBytes, randomUUID } from 'node:crypto';
@@ -29,27 +29,14 @@ function validateOptions({ installDir, publicBaseUrl, port = 17326 } = {}) {
 export function restrictDirectory(path) {
   if (readdirSync(path).length !== 0) throw new Error('Permission initialization requires a newly created empty directory.');
   if (process.platform !== 'win32') { chmodSync(path, 0o700); return; }
-  let aclFile;
   try {
-    const identity = execFileSync('whoami.exe', ['/user', '/fo', 'csv', '/nh'], { windowsHide: true, shell: false, encoding: 'utf8', timeout: 5000 });
-    const sid = identity.match(/S-1-\d+(?:-\d+)+/);
-    if (!sid) throw new Error('Missing current identity');
-    // Only this new empty directory is reset, never an existing private runtime.
-    execFileSync('icacls.exe', [path, '/reset'], { windowsHide: true, shell: false, stdio: 'pipe', timeout: 5000 });
-    execFileSync('icacls.exe', [path, '/inheritance:r', '/grant:r', `*${sid[0]}:(OI)(CI)F`, '*S-1-5-18:(OI)(CI)F'], { windowsHide: true, shell: false, stdio: 'pipe', timeout: 5000 });
-    aclFile = join(path, '.acl-check-' + randomUUID() + '.tmp');
-    execFileSync('icacls.exe', [path, '/save', aclFile], { windowsHide: true, shell: false, stdio: 'pipe', timeout: 5000 });
-    const text = readFileSync(aclFile, 'utf16le');
-    const dacl = text.match(/D:([^\r\n]*)/)?.[1]?.split(/S:|O:|G:/)[0] || '';
-    const entries = dacl.match(/\([^)]*\)/g) || [];
-    if (!dacl.slice(0, dacl.indexOf('(')).includes('P') || entries.length !== 2
-        || !entries.some(entry => entry.endsWith(';;;SY)'))
-        || !entries.some(entry => entry.endsWith(';;;' + sid[0] + ')'))
-        || !entries.every(entry => entry.startsWith('(A;OICI;FA;;;'))) throw new Error('Private DACL readback mismatch');
+    const script = readFileSync(new URL('./private-directory.ps1', import.meta.url), 'utf8');
+    execFileSync('powershell.exe', ['-NoLogo', '-NoProfile', '-NonInteractive', '-EncodedCommand', Buffer.from(script, 'utf16le').toString('base64')], {
+      windowsHide: true, shell: false, stdio: 'pipe', timeout: 10000,
+      env: { ...process.env, DOTS_NEW_DIRECTORY: path }
+    });
   } catch { throw new Error('Cannot restrict the new runtime directory to the current user and SYSTEM; initialization stopped before writing secrets.'); }
-  finally { if (aclFile && existsSync(aclFile)) unlinkSync(aclFile); }
 }
-
 /** Create a fresh private runtime. Existing or partial runtime is never replaced. */
 export function initialize(options) {
   const { installDir, publicBaseUrl, port } = validateOptions(options);

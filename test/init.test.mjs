@@ -8,6 +8,16 @@ import { initialize, parseArguments, restrictDirectory } from '../deploy/init.mj
 import { hashOwnerCode } from '../lib/oauth.mjs';
 
 const base = 'https://owner.example/dots';
+function readWindowsAcl(directory) {
+  const script = [
+    "$ErrorActionPreference='Stop'",
+    "$ProgressPreference='SilentlyContinue'",
+    "$dotsAcl=[IO.Directory]::GetAccessControl($env:DOTS_ACL_TEST_DIRECTORY)",
+    "$dotsRules=@($dotsAcl.GetAccessRules($true,$true,[Security.Principal.SecurityIdentifier])|ForEach-Object{[pscustomobject]@{Sid=$_.IdentityReference.Value;Rights=[int]$_.FileSystemRights;Flags=[int]$_.InheritanceFlags;Propagation=[int]$_.PropagationFlags;Type=[string]$_.AccessControlType;Inherited=$_.IsInherited}})",
+    "[pscustomobject]@{Protected=$dotsAcl.AreAccessRulesProtected;Rules=$dotsRules}|ConvertTo-Json -Depth 4 -Compress"
+  ].join(';');
+  return JSON.parse(execFileSync('powershell.exe',['-NoLogo','-NoProfile','-NonInteractive','-EncodedCommand',Buffer.from(script,'utf16le').toString('base64')],{encoding:'utf8',windowsHide:true,env:{...process.env,DOTS_ACL_TEST_DIRECTORY:directory}}));
+}
 function temporary(t) {
   const dir = mkdtempSync(join(tmpdir(), 'dots-init-test-'));
   t.after(() => rmSync(dir, { recursive: true, force: true }));
@@ -38,17 +48,14 @@ test('fresh installation has separate credentials, private absolute paths and sa
     for (const path of [result.configPath, result.ownerCodePath, result.manifestPath]) assert.equal(statSync(path).mode & 0o777, 0o600);
   } else {
     // Inspect identity only; never print the private files or their contents.
-    const aclFile = join(installDir, 'test-acl.txt');
-    execFileSync('icacls.exe', [result.runtimeRoot, '/save', aclFile], { windowsHide: true, stdio: 'pipe' });
-    const acl = readFileSync(aclFile, 'utf16le');
-    const dacl = acl.match(/D:([^\r\n]*)/)?.[1]?.split(/S:|O:|G:/)[0] || '';
-    const entries = dacl.match(/\([^)]*\)/g) || [];
+    const acl = readWindowsAcl(result.runtimeRoot);
     const identity = execFileSync('whoami.exe', ['/user', '/fo', 'csv', '/nh'], { encoding: 'utf8', windowsHide: true });
     const sid = identity.match(/S-1-\d+(?:-\d+)+/)[0];
-    assert.equal(entries.length, 2);
-    assert.ok(entries.some(entry => entry.endsWith(';;;SY)')));
-    assert.ok(entries.some(entry => entry.endsWith(';;;' + sid + ')')));
-    assert.ok(entries.every(entry => entry.startsWith('(A;OICI;FA;;;')));
+    const expected = new Set([sid,'S-1-5-18']);
+    assert.equal(acl.Protected,true);
+    assert.equal(acl.Rules.length,expected.size);
+    for(const entry of acl.Rules){assert.ok(expected.has(entry.Sid));assert.equal(entry.Rights,2032127);assert.equal(entry.Flags,3);assert.equal(entry.Propagation,0);assert.equal(entry.Type,'Allow');assert.equal(entry.Inherited,false);}
+    assert.deepEqual(new Set(acl.Rules.map(entry=>entry.Sid)),expected);
   }
 });
 
@@ -60,12 +67,10 @@ test('permission setup refuses existing contents and removes extra explicit acce
   const directory=temporary(t);
   execFileSync('icacls.exe',[directory,'/grant:r','*S-1-1-0:(OI)(CI)F'],{windowsHide:true,stdio:'pipe'});
   restrictDirectory(directory);
-  const aclFile=join(directory,'test-acl.txt');
-  execFileSync('icacls.exe',[directory,'/save',aclFile],{windowsHide:true,stdio:'pipe'});
-  const text=readFileSync(aclFile,'utf16le');
-  assert.doesNotMatch(text,/;;;WD\)/);
-  const dacl=text.match(/D:([^\r\n]*)/)?.[1]?.split(/S:|O:|G:/)[0] || '';
-  assert.equal((dacl.match(/\([^)]*\)/g)||[]).length,2);
+  const acl=readWindowsAcl(directory);
+  assert.equal(acl.Protected,true);
+  assert.ok(acl.Rules.every(entry=>entry.Sid!=='S-1-1-0'));
+  assert.equal(acl.Rules.length,2);
 });
 
 test('URL validation rejects insecure or ambiguous issuers before any runtime creation', t => {
