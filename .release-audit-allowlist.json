@@ -2,7 +2,7 @@
   {
     "file": "test/init.test.mjs",
     "rule": "credential-url",
-    "sha256": "4845b17115232408fd065ab705c44aef9c0b0fc3d8d227b5d8710765ced06c7f",
+    "sha256": "2a71be7d4189c7b2e6b1780001827b95c35719068201f99cd3ee52cb7c25a09e",
     "reason": "Reviewed synthetic URL rejection/authentication fixtures; exact entire file hash only"
   },
   {

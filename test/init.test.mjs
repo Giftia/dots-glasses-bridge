@@ -4,7 +4,7 @@ import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, statSync, sym
 import { tmpdir } from 'node:os';
 import { join, parse, resolve } from 'node:path';
 import { execFileSync, spawnSync } from 'node:child_process';
-import { initialize, parseArguments } from '../deploy/init.mjs';
+import { initialize, parseArguments, restrictDirectory } from '../deploy/init.mjs';
 import { hashOwnerCode } from '../lib/oauth.mjs';
 
 const base = 'https://owner.example/dots';
@@ -40,7 +40,9 @@ test('fresh installation has separate credentials, private absolute paths and sa
     // Inspect identity only; never print the private files or their contents.
     const aclFile = join(installDir, 'test-acl.txt');
     execFileSync('icacls.exe', [result.runtimeRoot, '/save', aclFile], { windowsHide: true, stdio: 'pipe' });
-    const acl = readFileSync(aclFile, 'utf16le'), entries = acl.match(/\([^)]*\)/g) || [];
+    const acl = readFileSync(aclFile, 'utf16le');
+    const dacl = acl.match(/D:([^\r\n]*)/)?.[1]?.split(/S:|O:|G:/)[0] || '';
+    const entries = dacl.match(/\([^)]*\)/g) || [];
     const identity = execFileSync('whoami.exe', ['/user', '/fo', 'csv', '/nh'], { encoding: 'utf8', windowsHide: true });
     const sid = identity.match(/S-1-\d+(?:-\d+)+/)[0];
     assert.equal(entries.length, 2);
@@ -48,6 +50,22 @@ test('fresh installation has separate credentials, private absolute paths and sa
     assert.ok(entries.some(entry => entry.endsWith(';;;' + sid + ')')));
     assert.ok(entries.every(entry => entry.startsWith('(A;OICI;FA;;;')));
   }
+});
+
+test('permission setup refuses existing contents and removes extra explicit access from a new Windows directory', t => {
+  const occupied = temporary(t);writeFileSync(join(occupied,'keep.txt'),'preserve');
+  assert.throws(() => restrictDirectory(occupied), /empty directory/);
+  assert.equal(readFileSync(join(occupied,'keep.txt'),'utf8'),'preserve');
+  if (process.platform !== 'win32') return;
+  const directory=temporary(t);
+  execFileSync('icacls.exe',[directory,'/grant:r','*S-1-1-0:(OI)(CI)F'],{windowsHide:true,stdio:'pipe'});
+  restrictDirectory(directory);
+  const aclFile=join(directory,'test-acl.txt');
+  execFileSync('icacls.exe',[directory,'/save',aclFile],{windowsHide:true,stdio:'pipe'});
+  const text=readFileSync(aclFile,'utf16le');
+  assert.doesNotMatch(text,/;;;WD\)/);
+  const dacl=text.match(/D:([^\r\n]*)/)?.[1]?.split(/S:|O:|G:/)[0] || '';
+  assert.equal((dacl.match(/\([^)]*\)/g)||[]).length,2);
 });
 
 test('URL validation rejects insecure or ambiguous issuers before any runtime creation', t => {
