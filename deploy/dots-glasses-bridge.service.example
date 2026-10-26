@@ -1,0 +1,24 @@
+# EXAMPLE ONLY. Adapt paths, User and Group before installation.
+# Run initialization as the same service account so private permissions match.
+[Unit]
+Description=Dots glasses bridge
+After=network.target
+
+[Service]
+Type=simple
+User=dots-bridge
+Group=dots-bridge
+WorkingDirectory=/opt/dots-glasses-bridge
+Environment=DOT_EVENTS_CONFIG=/opt/dots-glasses-bridge/.dot-events/private/config.json
+ExecStart=/usr/bin/node /opt/dots-glasses-bridge/server.mjs
+Restart=on-failure
+RestartSec=5
+UMask=0077
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=true
+ReadWritePaths=/opt/dots-glasses-bridge/.dot-events/data
+
+[Install]
+WantedBy=multi-user.target

@@ -1,0 +1,50 @@
+[
+  {
+    "file": "test/init.test.mjs",
+    "rule": "credential-url",
+    "sha256": "4845b17115232408fd065ab705c44aef9c0b0fc3d8d227b5d8710765ced06c7f",
+    "reason": "Reviewed synthetic URL rejection/authentication fixtures; exact entire file hash only"
+  },
+  {
+    "file": "test/media.test.mjs",
+    "rule": "credential-url",
+    "sha256": "2e5d51480b82bc3d951b505a449dfac0af9b0fc3480829deb7b5744ed1f20ded",
+    "reason": "Reviewed synthetic URL rejection/authentication fixtures; exact entire file hash only"
+  },
+  {
+    "file": "test/oauth.test.mjs",
+    "rule": "credential-url",
+    "sha256": "deacaf324ff9884953aa786462b1d518d53b26c1b3664d702070dda4d13e720c",
+    "reason": "Reviewed synthetic URL rejection/authentication fixtures; exact entire file hash only"
+  },
+  {
+    "file": "test/proxy-webhook.test.mjs",
+    "rule": "credential-url",
+    "sha256": "3b1e246a9929e86e2e310588a82dc872219b5b32d4313bee39f3ffc1fc5487ea",
+    "reason": "Reviewed synthetic URL rejection/authentication fixtures; exact entire file hash only"
+  },
+  {
+    "file": "test/webhook.test.mjs",
+    "rule": "credential-url",
+    "sha256": "e9dc04c5af4f4e017abe5b5e22a643dabf26986fa4d3c5cb7438c5bb3ca04ded",
+    "reason": "Reviewed synthetic URL rejection/authentication fixtures; exact entire file hash only"
+  },
+  {
+    "file": "test/weixin-forwarder.test.mjs",
+    "rule": "credential-url",
+    "sha256": "1e16187a204ca2f6c6f314e3dad20aa56a103737cbe1adbd992d1aa469a256e1",
+    "reason": "Reviewed synthetic URL rejection/authentication fixtures; exact entire file hash only"
+  },
+  {
+    "file": "test/weixin-media.test.mjs",
+    "rule": "credential-url",
+    "sha256": "1ec75601a52668fa0434b8f267b3846d0132157e0f9f139fd93ade908227c755",
+    "reason": "Reviewed synthetic URL rejection/authentication fixtures; exact entire file hash only"
+  },
+  {
+    "file": "test/weixin.test.mjs",
+    "rule": "credential-url",
+    "sha256": "17d52df8dbd2e00dcae94eb3a916394d833c7a15b8c4629c7b70c4b91fc6138a",
+    "reason": "Reviewed synthetic URL rejection/authentication fixtures; exact entire file hash only"
+  }
+]
